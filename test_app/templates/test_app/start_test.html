@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Test</title>
+    <link rel="stylesheet" href="{% static 'test_app/styles.css' %}">
+</head>
+<body>
+    <h1>Start Test</h1>
+    <form id="upload-form" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}
+        <input type="file" id="csv-file" name="csv_file" accept=".csv">
+        <button type="submit">Start your test</button>
+    </form>
+</body>
+</html>

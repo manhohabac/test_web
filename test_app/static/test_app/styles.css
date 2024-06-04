@@ -1,0 +1,83 @@
+/* static/test_app/styles.css */
+
+body {
+    background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+#flashcard-container {
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+canvas {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+.custom-button {
+    background-color: #4CAF50; /* Green background */
+    border: none; /* Remove borders */
+    color: white; /* White text */
+    padding: 15px 32px; /* Some padding */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Make the buttons appear side by side */
+    font-size: 16px; /* Increase font size */
+    margin: 4px 2px; /* Add some margin */
+    cursor: pointer; /* Pointer/hand icon */
+    border-radius: 12px; /* Rounded corners */
+    transition: background-color 0.3s; /* Animation */
+}
+
+.custom-button:hover {
+    background-color: #45a049; /* Darker green */
+}
+
+#answer-entry {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#result-label {
+    font-size: 20px;
+    margin-top: 20px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+}
+
+.header .welcome-message {
+    font-size: 1.2em;
+}
+
+.header .logout-link {
+    text-decoration: none;
+    color: #000;
+}
+
+.main-content {
+    text-align: center;
+    margin-top: 20px;
+}

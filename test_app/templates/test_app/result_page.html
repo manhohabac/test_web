@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ADD8E6;
+            color: black;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Congratulations, <span id="username">{{user.username}}</span>!</h1>
+    <p>Your score is: <span id="user-score"></span></p>
+    <p>See you soon!</p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const params = new URLSearchParams(window.location.search);
+            const username = params.get('username');
+            const userScore = params.get('score');
+
+            if (username) {
+                document.getElementById('username').innerText = username;
+            }
+            if (userScore) {
+                document.getElementById('user-score').innerText = userScore;
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Kiểm tra xem trang có phải là result_page.html không
+            if (window.location.pathname.includes('result_page')) {
+                // Kiểm tra xem trang đã được load từ trình duyệt hay từ nút back không
+                if (!performance.navigation.type || performance.navigation.type === 2) {
+                    // Trang đã được load từ trình duyệt hoặc từ nút back, ngăn chặn nút back của trình duyệt
+                    history.pushState(null, null, window.location.href);
+                    window.onpopstate = function() {
+                        history.go(1);
+                    };
+                } else {
+                    // Trang đã được load lại bằng cách reload, chặn việc reload bằng cách chuyển hướng trở lại trang trước đó
+                    window.location.href = '/';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

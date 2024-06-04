@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ADD8E6;
+            color: black;
+            text-align: center;
+        }
+        .flashcard {
+            background-color: white;
+            color: black;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 50%;
+        }
+        .button {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #2a19e3;
+            color: yellow;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quick Test</h1>
+    <div id="score-display">Score: <span id="score">0</span></div>
+    <div class="flashcard">
+        <p id="card-content">{{ current_card.question }}</p>
+    </div>
+    <div>
+<!--        <button id="flip-btn" class="button" onclick="flipCard()">Show answer</button>-->
+        <button id="check-answer-btn" class="button" onclick="checkAnswer()">Check answer</button>
+<!--        <button id="prev-btn" class="button" onclick="prevCard()">Prev</button>-->
+        <button id="next-btn" class="button" onclick="nextCard()">Next</button>
+    </div>
+    <input type="text" autocomplete="off" id="answer-input" placeholder="Enter your answer here" style="width: 300px; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
+    <div id="result" class="result"></div>
+
+    <!-- Countdown timer -->
+    <div id="timer">01:00</div>
+
+    <script>
+        const cardContent = document.getElementById('card-content');
+        const answerInput = document.getElementById('answer-input');
+        const checkAnsBtn = document.getElementById('check-answer-btn');
+        const resultDiv = document.getElementById('result');
+        const scoreDisplay = document.getElementById('score');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let userScore = 0;
+        let questionChecked = false;
+
+        let flashcard = {
+            question: "{{ current_card.question }}",
+            answer: "{{ current_card.answer }}",
+            sideUp: "Q"
+        };
+
+        function flipCard() {
+            if (flashcard.sideUp === "Q") {
+                cardContent.innerText = flashcard.answer;
+                flashcard.sideUp = "A";
+            } else {
+                cardContent.innerText = flashcard.question;
+                flashcard.sideUp = "Q";
+            }
+        }
+
+        function displayScore() {
+            scoreDisplay.textContent = userScore;
+        }
+
+        function checkAnswer() {
+            if (!questionChecked) {
+<!--                checkAnsBtn.disabled = false;-->
+                const userAnswer = answerInput.value.trim().toLowerCase();
+                const correctAnswer = flashcard.answer.trim().toLowerCase();
+                if (userAnswer === correctAnswer)
+                {
+<!--                    checkAnsBtn.disabled = false;-->
+                    resultDiv.innerText = "Correct!";
+                    resultDiv.style.color = "green";
+                    userScore += 20;
+                    displayScore();
+                    questionChecked = true;
+                }
+                else
+                {
+<!--                    resultDiv.innerText = `Incorrect! The answer is: ${flashcard.answer}`;-->
+<!--                    checkAnsBtn.disabled = true;-->
+                    resultDiv.innerText = `Incorrect!`;
+                    resultDiv.style.color = "red";
+                }
+            }
+            else
+            {
+                resultDiv.innerText = "You've already answered this question correctly. Move on next questions.";
+            }
+        }
+
+        async function prevCard() {
+            const response = await fetch('/prev_card/');
+            if (response.ok) {
+                const data = await response.json();
+                flashcard.question = data.question;
+                flashcard.answer = data.answer;
+                flashcard.sideUp = "Q";
+                cardContent.innerText = flashcard.question;
+                answerInput.value = "";
+                resultDiv.innerText = "";
+                nextBtn.disabled = false;
+                prevBtn.disabled = false;
+            }
+        }
+
+        async function nextCard() {
+<!--            checkAnsBtn.disabled = false;-->
+            const response = await fetch('/next_card/');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status == 'no_more_questions'){
+                    nextBtn.disable = true;
+                    prevBtn.disable = true;
+                    resultDiv,innerText = "No more questions.";
+                    resultDiv.style.color = "blue";
+                }
+                else {
+                    flashcard.question = data.question;
+                    flashcard.answer = data.answer;
+                    flashcard.sideUp = "Q";
+                    cardContent.innerText = flashcard.question;
+                    answerInput.value = "";
+                    resultDiv.innerText = "";
+<!--                    prevBtn.disabled = false;-->
+                    questionChecked = false;
+                }
+            }
+        }
+
+        // Countdown timer
+        const timerDisplay = document.getElementById('timer');
+
+        function startTimer(duration, display) {
+            let timer = duration, minutes, seconds;
+            let countdownInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(countdownInterval);
+                    display.textContent = "Time's up!";
+                    setTimeout(function() {
+<!--                            window.location.href = "/result_page";-->
+                        window.location.href = "/result_page?score=" + userScore;
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        window.onload = function () {
+            let oneMinutes = 60,
+                display = document.querySelector('#timer');
+            startTimer(oneMinutes, display);
+        };
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.location.pathname.includes('test')) {
+                if (!performance.navigation.type || performance.navigation.type === 2) {
+                    history.pushState(null, null, window.location.href);
+                    window.onpopstate = function() {
+                        history.go(1);
+                    };
+                } else {
+                    window.location.href = '/';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
