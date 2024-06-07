@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'test_app.middleware.AuthenticationMiddleware',
+    # 'test_app.middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'quick_test_app.urls'
@@ -109,11 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -127,3 +126,5 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'test_app/static')]
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+APPEND_SLASH = True

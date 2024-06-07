@@ -1,3 +1,5 @@
+<!-- test_app/start_test.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,14 +7,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Start Test</title>
-    <link rel="stylesheet" href="{% static 'test_app/styles.css' %}">
 </head>
 <body>
-    <h1>Start Test</h1>
-    <form id="upload-form" enctype="multipart/form-data" method="POST">
+    <h1>Start Your Test</h1>
+    <form method='post' action="{% url 'start_test' %}">
         {% csrf_token %}
-        <input type="file" id="csv-file" name="csv_file" accept=".csv">
+        <label for="test_id">Choose a test:</label>
+        <select name="test_id" id="test_id">
+            {% for test in tests %}
+                <option value="{{ test.id }}">{{ test.name }}</option>
+            {% endfor %}
+        </select>
         <button type="submit">Start your test</button>
     </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.location.pathname.includes('start_test')) {
+                if (!performance.navigation.type || performance.navigation.type === 2) {
+                    history.pushState(null, null, window.location.href);
+                    window.onpopstate = function() {
+                        history.go(1);
+                    };
+                } else {
+                    // Gửi yêu cầu đến view xử lý đăng xuất khi người dùng reload trang
+                    fetch("{% url 'logout' %}", {
+                        method: 'POST',  // Sử dụng phương thức POST để gửi yêu cầu đến view xử lý đăng xuất
+                        credentials: 'same-origin',  // Gửi cookie session cùng yêu cầu
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'  // Gửi CSRF token cùng yêu cầu POST
+                        }
+                    }).then(function(response) {
+                        // Sau khi xử lý đăng xuất, chuyển hướng người dùng đến trang đăng nhập
+                        window.location.href = '/';
+                    });
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Function to check the flag in localStorage and logout if needed
+        window.addEventListener('load', function (event) {
+            // Check if this is the first tab open after closing all tabs
+            const lastTabClosed = localStorage.getItem('lastTabClosed');
+            if (lastTabClosed && Date.now() - lastTabClosed < 1000) {
+                localStorage.removeItem('lastTabClosed');
+                navigator.sendBeacon('/logout/');
+            }
+        });
+    </script>
 </body>
 </html>

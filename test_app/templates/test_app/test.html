@@ -1,3 +1,5 @@
+<!-- test_app/test.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +20,7 @@
             padding: 20px;
             margin: 20px auto;
             width: 50%;
+            text-align: left;
         }
         .button {
             font-size: 20px;
@@ -39,19 +42,17 @@
     <h1>Quick Test</h1>
     <div id="score-display">Score: <span id="score">0</span></div>
     <div class="flashcard">
-        <p id="card-content">{{ current_card.question }}</p>
+        <pre id="card-content">{{ current_card.question|safe }}</pre>
     </div>
     <div>
-<!--        <button id="flip-btn" class="button" onclick="flipCard()">Show answer</button>-->
         <button id="check-answer-btn" class="button" onclick="checkAnswer()">Check answer</button>
-<!--        <button id="prev-btn" class="button" onclick="prevCard()">Prev</button>-->
         <button id="next-btn" class="button" onclick="nextCard()">Next</button>
     </div>
     <input type="text" autocomplete="off" id="answer-input" placeholder="Enter your answer here" style="width: 300px; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
     <div id="result" class="result"></div>
 
     <!-- Countdown timer -->
-    <div id="timer">01:00</div>
+    <div id="timer">00:10</div>
 
     <script>
         const cardContent = document.getElementById('card-content');
@@ -59,26 +60,17 @@
         const checkAnsBtn = document.getElementById('check-answer-btn');
         const resultDiv = document.getElementById('result');
         const scoreDisplay = document.getElementById('score');
-        const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         let userScore = 0;
         let questionChecked = false;
 
         let flashcard = {
-            question: "{{ current_card.question }}",
-            answer: "{{ current_card.answer }}",
+            question: "{{ current_card.question|escapejs }}".replace(/\\n/g, '<br>'),
+            answer: "{{ current_card.answer|escapejs }}",
             sideUp: "Q"
         };
 
-        function flipCard() {
-            if (flashcard.sideUp === "Q") {
-                cardContent.innerText = flashcard.answer;
-                flashcard.sideUp = "A";
-            } else {
-                cardContent.innerText = flashcard.question;
-                flashcard.sideUp = "Q";
-            }
-        }
+        cardContent.innerHTML = flashcard.question;
 
         function displayScore() {
             scoreDisplay.textContent = userScore;
@@ -86,66 +78,38 @@
 
         function checkAnswer() {
             if (!questionChecked) {
-<!--                checkAnsBtn.disabled = false;-->
                 const userAnswer = answerInput.value.trim().toLowerCase();
                 const correctAnswer = flashcard.answer.trim().toLowerCase();
-                if (userAnswer === correctAnswer)
-                {
-<!--                    checkAnsBtn.disabled = false;-->
+                if (userAnswer === correctAnswer) {
                     resultDiv.innerText = "Correct!";
                     resultDiv.style.color = "green";
                     userScore += 20;
                     displayScore();
                     questionChecked = true;
-                }
-                else
-                {
-<!--                    resultDiv.innerText = `Incorrect! The answer is: ${flashcard.answer}`;-->
-<!--                    checkAnsBtn.disabled = true;-->
-                    resultDiv.innerText = `Incorrect!`;
+                } else {
+                    resultDiv.innerText = "Incorrect!";
                     resultDiv.style.color = "red";
                 }
-            }
-            else
-            {
-                resultDiv.innerText = "You've already answered this question correctly. Move on next questions.";
-            }
-        }
-
-        async function prevCard() {
-            const response = await fetch('/prev_card/');
-            if (response.ok) {
-                const data = await response.json();
-                flashcard.question = data.question;
-                flashcard.answer = data.answer;
-                flashcard.sideUp = "Q";
-                cardContent.innerText = flashcard.question;
-                answerInput.value = "";
-                resultDiv.innerText = "";
-                nextBtn.disabled = false;
-                prevBtn.disabled = false;
+            } else {
+                resultDiv.innerText = "You've already answered this question correctly. Move on to the next question.";
             }
         }
 
         async function nextCard() {
-<!--            checkAnsBtn.disabled = false;-->
             const response = await fetch('/next_card/');
             if (response.ok) {
                 const data = await response.json();
-                if (data.status == 'no_more_questions'){
-                    nextBtn.disable = true;
-                    prevBtn.disable = true;
-                    resultDiv,innerText = "No more questions.";
+                if (data.status == 'no_more_questions') {
+                    nextBtn.disabled = true;
+                    resultDiv.innerText = "No more questions.";
                     resultDiv.style.color = "blue";
-                }
-                else {
-                    flashcard.question = data.question;
+                } else {
+                    flashcard.question = data.question.replace(/\\n/g, '<br>');
                     flashcard.answer = data.answer;
                     flashcard.sideUp = "Q";
-                    cardContent.innerText = flashcard.question;
+                    cardContent.innerHTML = flashcard.question;
                     answerInput.value = "";
                     resultDiv.innerText = "";
-<!--                    prevBtn.disabled = false;-->
                     questionChecked = false;
                 }
             }
@@ -169,7 +133,6 @@
                     clearInterval(countdownInterval);
                     display.textContent = "Time's up!";
                     setTimeout(function() {
-<!--                            window.location.href = "/result_page";-->
                         window.location.href = "/result_page?score=" + userScore;
                     }, 1000);
                 }
@@ -177,9 +140,9 @@
         }
 
         window.onload = function () {
-            let oneMinutes = 60,
+            let tenSeconds = 10,
                 display = document.querySelector('#timer');
-            startTimer(oneMinutes, display);
+            startTimer(tenSeconds, display);
         };
     </script>
 
@@ -192,8 +155,40 @@
                         history.go(1);
                     };
                 } else {
-                    window.location.href = '/';
+                    // Gửi yêu cầu đến view xử lý đăng xuất khi người dùng reload trang
+                    fetch("{% url 'logout' %}", {
+                        method: 'POST',  // Sử dụng phương thức POST để gửi yêu cầu đến view xử lý đăng xuất
+                        credentials: 'same-origin',  // Gửi cookie session cùng yêu cầu
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'  // Gửi CSRF token cùng yêu cầu POST
+                        }
+                    }).then(function(response) {
+                        // Sau khi xử lý đăng xuất, chuyển hướng người dùng đến trang đăng nhập
+                        window.location.href = '/';
+                    });
                 }
+            }
+        });
+    </script>
+
+    <script>
+<!--        // Function to set a flag in localStorage when the page is unloaded-->
+<!--        window.addEventListener('beforeunload', function (event) {-->
+<!--            // Check if this is the last open tab-->
+<!--            if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {-->
+<!--                localStorage.setItem('lastTabClosed', Date.now());-->
+<!--            } else {-->
+<!--                navigator.sendBeacon('/logout/');-->
+<!--            }-->
+<!--        });-->
+
+        // Function to check the flag in localStorage and logout if needed
+        window.addEventListener('load', function (event) {
+            // Check if this is the first tab open after closing all tabs
+            const lastTabClosed = localStorage.getItem('lastTabClosed');
+            if (lastTabClosed && Date.now() - lastTabClosed < 1000) {
+                localStorage.removeItem('lastTabClosed');
+                navigator.sendBeacon('/logout/');
             }
         });
     </script>

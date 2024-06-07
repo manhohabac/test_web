@@ -1,3 +1,5 @@
+<!-- test_app/home.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +14,7 @@
             <p>Welcome, {{ user.username }}!</p>
         </div>
         <div class="logout-link">
+            {% csrf_token %}
             <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
@@ -19,7 +22,52 @@
         <h1>Welcome to the Test App</h1>
         <a href="{% url 'start_test' %}">Start Test</a>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.location.pathname.includes('home')) {
+                if (!performance.navigation.type || performance.navigation.type === 2) {
+                    history.pushState(null, null, window.location.href);
+                    window.onpopstate = function() {
+                        history.go(1);
+                    };
+                } else {
+                    // Gửi yêu cầu đến view xử lý đăng xuất khi người dùng reload trang
+                    fetch("{% url 'logout' %}", {
+                        method: 'POST',  // Sử dụng phương thức POST để gửi yêu cầu đến view xử lý đăng xuất
+                        credentials: 'same-origin',  // Gửi cookie session cùng yêu cầu
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'  // Gửi CSRF token cùng yêu cầu POST
+                        }
+                    }).then(function(response) {
+                        // Sau khi xử lý đăng xuất, chuyển hướng người dùng đến trang đăng nhập
+                        window.location.href = '/';
+                    });
+                }
+            }
+        });
+    </script>
+
+    <script>
+<!--        // Function to set a flag in localStorage when the page is unloaded-->
+<!--        window.addEventListener('beforeunload', function (event) {-->
+<!--            // Check if this is the last open tab-->
+<!--            if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {-->
+<!--                localStorage.setItem('lastTabClosed', Date.now());-->
+<!--            } else {-->
+<!--                navigator.sendBeacon('/logout/');-->
+<!--            }-->
+<!--        });-->
+
+        // Function to check the flag in localStorage and logout if needed
+        window.addEventListener('load', function (event) {
+            // Check if this is the first tab open after closing all tabs
+            const lastTabClosed = localStorage.getItem('lastTabClosed');
+            if (lastTabClosed && Date.now() - lastTabClosed < 1000) {
+                localStorage.removeItem('lastTabClosed');
+                navigator.sendBeacon('/logout/');
+            }
+        });
+    </script>
 </body>
 </html>
-
-

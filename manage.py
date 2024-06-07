@@ -4,6 +4,7 @@ import os
 import sys
 from django.conf import settings
 
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quick_test_app.settings')

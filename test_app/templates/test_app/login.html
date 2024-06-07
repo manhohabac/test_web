@@ -1,22 +1,79 @@
-<!-- test_app/templates/test_app/login.html -->
+<!-- test_app/login.html -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ADD8E6;
+            color: black;
+            text-align: left;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .login-form {
+            width: 50%;
+            padding: 20px;
+            margin-top: -30px;              /* Khoảng cách giữa phần login và ảnh 2 */
+            margin-bottom: -30px;
+            align-self: center;             /* Căn giữa theo chiều ngang */
+            margin-left: -20px;
+            text-align: center;
+        }
+        .image-container img {
+            width: 72%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .login-form label {
+            text-align: left;
+            margin-left: 380px;
+            display: block;                 /* Đảm bảo nhãn là một khối để áp dụng căn lề trái */
+        }
+        .login-form button {
+            font-size: 18px;                /* Tăng kích thước chữ */
+            padding: 5px 20px;              /* Tăng kích thước nút */
+            background-color: #4CAF50;      /* Màu nền */
+            color: white;                   /* Màu chữ */
+            border: none;                   /* Bỏ viền */
+            border-radius: 10px;            /* Bo góc */
+            cursor: pointer;                /* Thay đổi con trỏ khi hover */
+            margin-top: 5px;
+        }
+        .login-form button:hover {
+            background-color: #45a049;      /* Màu nền khi hover */
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <label for="username">Username:</label><br>
-        <input type="text" name="username" id="username" autocomplete="off"><br>
-        <label for="password">Password:</label><br>
-        <input type="password" name="password" id="password" autocomplete="off"><br>
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    <div class="container">
+        <div class="image-container">
+            <img src="{% static 'images/2.png' %}" alt="Image 2">
+        </div>
+        <div class="login-form">
+            <h1>Login</h1>
+            <form method="POST">
+                {% csrf_token %}
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" autocomplete="off"><br>
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" autocomplete="off"><br>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+        </div>
+        <div class="image-container">
+            <img src="{% static 'images/1.png' %}" alt="Image 1">
+        </div>
+    </div>
 </body>
 </html>
